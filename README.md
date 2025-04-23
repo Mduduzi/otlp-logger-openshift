@@ -1,0 +1,1 @@
+# otlp-logger-openshift
