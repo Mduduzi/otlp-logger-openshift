@@ -1,0 +1,14 @@
+{
+    "name": "otlp-logger",
+    "version": "1.0.0",
+    "description": "Sample app to send logs to OTLP endpoint",
+    "main": "index.js",
+    "dependencies": {
+      "@opentelemetry/api": "^1.8.0",
+      "@opentelemetry/exporter-logs-otlp-http": "^0.51.1",
+      "@opentelemetry/sdk-logs": "^0.51.1"
+    },
+    "scripts": {
+      "start": "node index.js"
+    }
+  }
