@@ -1,7 +1,7 @@
 {
   "name": "otlp-logger",
   "version": "1.0.0",
-  "description": "A sample Node.js app to send OTLP logs to Tempo",
+  "description": "A sample Node.js app to send OTLP logs and traces to Tempo",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
