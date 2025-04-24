@@ -4,7 +4,7 @@ const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumenta
 
 // Configure the OTLP exporter to use gRPC and point to Tempo distributor
 const traceExporter = new OTLPTraceExporter({
-  url: 'grpc://tempo-distributor:4317', // Use gRPC protocol and Tempo distributor service name
+  url: 'grpc://tempo-distributor:4317', // Use gRPC protocol and Tempo distributor service name in OpenShift
 });
 
 // Set up the OpenTelemetry SDK
@@ -16,14 +16,13 @@ const sdk = new NodeSDK({
 // Start the SDK
 sdk.start();
 
-// Example: Emit a log or trace (adjust based on your actual logging setup)
 console.log('Starting log emission to OTLP gRPC endpoint...');
 
-// For logs, if using @opentelemetry/sdk-logs (if applicable)
-const { logRecordExporter } = require('@opentelemetry/exporter-logs-otlp-grpc');
-const logExporter = new logRecordExporter({
-  url: 'grpc://tempo-distributor:4317',
-});
+// Example: Emit a log or trace periodically (adjust based on your actual setup)
+setInterval(() => {
+  console.log('Emitting a log record...');
+  // Add your trace or log emission logic here if needed
+}, 5000);
 
 // Ensure proper shutdown (optional)
 process.on('SIGTERM', () => {
