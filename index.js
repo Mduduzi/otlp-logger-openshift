@@ -1,48 +1,34 @@
-const { diag, DiagConsoleLogger, DiagLogLevel } = require('@opentelemetry/api');
-const { LogRecordProcessor, SimpleLogRecordProcessor } = require('@opentelemetry/sdk-logs');
-const { OTLPLogExporter } = require('@opentelemetry/exporter-logs-otlp-grpc');
-const { LoggerProvider } = require('@opentelemetry/sdk-logs');
+const { NodeSDK } = require('@opentelemetry/sdk-node');
+const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-grpc');
+const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node');
 
-// Set up diagnostics for debugging
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
-
-// Configure OTLP exporter for logs using gRPC
-const exporter = new OTLPLogExporter({
-  url: 'grpc://tempo-distributor:4317', // OTLP gRPC endpoint for logs in OpenShift namespace
-  credentials: undefined, // No credentials needed for insecure connection
+// Configure the OTLP exporter to use gRPC and point to Tempo distributor
+const traceExporter = new OTLPTraceExporter({
+  url: 'grpc://tempo-distributor:4317', // Use gRPC protocol and Tempo distributor service name
 });
 
-// Set up the logger provider
-const loggerProvider = new LoggerProvider();
-loggerProvider.addLogRecordProcessor(new SimpleLogRecordProcessor(exporter));
+// Set up the OpenTelemetry SDK
+const sdk = new NodeSDK({
+  traceExporter,
+  instrumentations: [getNodeAutoInstrumentations()],
+});
 
-// Get a logger instance
-const logger = loggerProvider.getLogger('otlp-logger');
+// Start the SDK
+sdk.start();
 
-// Function to emit logs periodically
-function emitLogs() {
-  console.log('Emitting a log record...');
-  logger.emit({
-    severityText: 'INFO',
-    body: 'This is a sample log message sent to Tempo via OTLP gRPC',
-    attributes: {
-      'log.type': 'sample',
-      'source': 'nodejs-app'
-    }
-  });
-
-  // Schedule the next log emission
-  setTimeout(emitLogs, 10000); // Every 10 seconds
-}
-
-// Start emitting logs
+// Example: Emit a log or trace (adjust based on your actual logging setup)
 console.log('Starting log emission to OTLP gRPC endpoint...');
-emitLogs();
 
-// Keep the application running
-process.on('SIGINT', () => {
-  loggerProvider.shutdown().then(() => {
-    console.log('Logger provider shut down.');
-    process.exit(0);
-  });
+// For logs, if using @opentelemetry/sdk-logs (if applicable)
+const { logRecordExporter } = require('@opentelemetry/exporter-logs-otlp-grpc');
+const logExporter = new logRecordExporter({
+  url: 'grpc://tempo-distributor:4317',
+});
+
+// Ensure proper shutdown (optional)
+process.on('SIGTERM', () => {
+  sdk.shutdown()
+    .then(() => console.log('Tracing terminated'))
+    .catch((error) => console.log('Error terminating tracing', error))
+    .finally(() => process.exit(0));
 });
