@@ -1,15 +1,15 @@
 const { diag, DiagConsoleLogger, DiagLogLevel } = require('@opentelemetry/api');
 const { LogRecordProcessor, SimpleLogRecordProcessor } = require('@opentelemetry/sdk-logs');
-const { OTLPLogExporter } = require('@opentelemetry/exporter-logs-otlp-http');
+const { OTLPLogExporter } = require('@opentelemetry/exporter-logs-otlp-grpc');
 const { LoggerProvider } = require('@opentelemetry/sdk-logs');
 
 // Set up diagnostics for debugging
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 
-// Configure OTLP exporter for logs
+// Configure OTLP exporter for logs using gRPC
 const exporter = new OTLPLogExporter({
-  url: 'http://tempo-distributor:4317/v1/logs', // OTLP HTTP endpoint for logs in OpenShift namespace
-  headers: {},
+  url: 'grpc://tempo-distributor:4317', // OTLP gRPC endpoint for logs in OpenShift namespace
+  credentials: undefined, // No credentials needed for insecure connection
 });
 
 // Set up the logger provider
@@ -24,7 +24,7 @@ function emitLogs() {
   console.log('Emitting a log record...');
   logger.emit({
     severityText: 'INFO',
-    body: 'This is a sample log message sent to Tempo via OTLP',
+    body: 'This is a sample log message sent to Tempo via OTLP gRPC',
     attributes: {
       'log.type': 'sample',
       'source': 'nodejs-app'
@@ -36,7 +36,7 @@ function emitLogs() {
 }
 
 // Start emitting logs
-console.log('Starting log emission to OTLP endpoint...');
+console.log('Starting log emission to OTLP gRPC endpoint...');
 emitLogs();
 
 // Keep the application running
